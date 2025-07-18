@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Lottie from "lottie-react";
 
 // SVGs for the blobs
 // Blob1: extracted from blob1.svg
@@ -40,8 +42,17 @@ export default function ComingSoon() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  // Lottie animation state
+  const [lottieData, setLottieData] = useState<object | null>(null);
+  useEffect(() => {
+    fetch("/COMING SOON.json")
+      .then((res) => res.json())
+      .then(setLottieData)
+      .catch(() => setLottieData(null));
+  }, []);
+
   type BlobState = { x: number; y: number; vx: number; vy: number; type: 1 | 2 };
-  const BLOB_COUNT = 10;
+  const BLOB_COUNT = 5;
   // Initialize 10 of each blob type
   const [blobs, setBlobs] = useState<BlobState[]>([]);
 
@@ -86,19 +97,19 @@ export default function ComingSoon() {
           let x = oldX, y = oldY, vx = oldVx, vy = oldVy;
           x += vx;
           y += vy;
-          // Bounce off edges
+          // Mirror bounce off edges
           if (x < 0) {
-            x = 0;
+            x = -x;
             vx *= -1;
           } else if (x > containerSize.width - width) {
-            x = containerSize.width - width;
+            x = 2 * (containerSize.width - width) - x;
             vx *= -1;
           }
           if (y < 0) {
-            y = 0;
+            y = -y;
             vy *= -1;
           } else if (y > containerSize.height - height) {
-            y = containerSize.height - height;
+            y = 2 * (containerSize.height - height) - y;
             vy *= -1;
           }
           return { x, y, vx, vy, type };
@@ -153,13 +164,16 @@ export default function ComingSoon() {
     >
       {/* Top Logo Placeholder */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20">
-        <img
-          src="/MiniHackathon Logo.svg"
-          alt="MiniHackathon Logo"
-          width={260}
-          height={60}
-          style={{ objectFit: "contain" }}
-        />
+        <div className="rounded-2xl px-6 py-2 bg-white/60 backdrop-blur-md">
+          <Image
+            src="/MiniHackathon Logo.svg"
+            alt="MiniHackathon Logo"
+            width={260}
+            height={60}
+            style={{ objectFit: "contain" }}
+            priority
+          />
+        </div>
       </div>
 
       {/* Animated Blobs */}
@@ -181,20 +195,31 @@ export default function ComingSoon() {
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
-        <h1 className="text-6xl font-bold mb-8 text-black text-center">Coming Soon</h1>
+        <div className="rounded-2xl bg-white/60 backdrop-blur-md flex items-center justify-center">
+          {/* Lottie animation for Coming Soon */}
+          {lottieData && (
+            <Lottie
+              animationData={lottieData}
+              loop
+              style={{ width: 400, height: 400, maxWidth: "80vw", maxHeight: "60vh" }}
+            />
+          )}
+        </div>
         {/* Optionally add subtitle or countdown here */}
       </div>
 
       {/* Bottom Logo Placeholder */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-        <span className="text-xs text-gray-500 mb-2">Organized By</span>
-        <img
-          src="/ms_club_logo.svg"
-          alt="MS Club Logo"
-          width={160}
-          height={40}
-          style={{ objectFit: "contain" }}
-        />
+        <div className="rounded-2xl px-2 py-2 bg-white/60 backdrop-blur-md flex flex-col items-center">
+          <span className="text-xs text-gray-500 mb-2">Organized By</span>
+          <Image
+            src="/ms_club_logo.svg"
+            alt="MS Club Logo"
+            width={160}
+            height={40}
+            style={{ objectFit: "contain" }}
+          />
+        </div>
       </div>
     </div>
   );
