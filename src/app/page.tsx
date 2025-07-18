@@ -52,7 +52,7 @@ export default function ComingSoon() {
   }, []);
 
   type BlobState = { x: number; y: number; vx: number; vy: number; type: 1 | 2 };
-  const BLOB_COUNT = 5;
+  const BLOB_COUNT = 10;
   // Initialize 10 of each blob type
   const [blobs, setBlobs] = useState<BlobState[]>([]);
 
