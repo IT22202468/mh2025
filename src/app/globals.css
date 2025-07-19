@@ -37,24 +37,6 @@ body {
   }
 }
 
-.coming-soon-animate {
-  color: transparent;
-  -webkit-text-stroke: 2.5px #222;
-  text-stroke: 2.5px #222;
-  position: relative;
-  background: none;
-  animation: revealTextFill 1.2s 2.2s forwards;
-}
-.coming-soon-animate {
-  /* Animate the stroke drawing */
-  background: linear-gradient(90deg, #222 0 100%);
-  background-repeat: no-repeat;
-  background-size: 0% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: drawTextStroke 2.2s cubic-bezier(0.77,0,0.18,1) forwards, revealTextFill 1.2s 2.2s forwards;
-}
-
 @keyframes drawTextStroke {
   to {
     background-size: 100% 100%;

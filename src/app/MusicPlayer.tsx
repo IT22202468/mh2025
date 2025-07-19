@@ -27,7 +27,7 @@ export default function MusicPlayer() {
     <>
       <audio
         ref={audioRef}
-        src="/Happy_tree.mp3"
+        src="/smalljoys.mp3"
         loop
         style={{ display: "none" }}
       />

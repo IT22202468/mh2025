@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Lottie from "lottie-react";
+import TrueFocus from "./TrueFocus";
 
 // SVGs for the blobs
-// Blob1: extracted from blob1.svg
 const BLOB1_WIDTH = 120;
 const BLOB1_HEIGHT = 135;
 const Blob1 = () => (
@@ -13,7 +12,6 @@ const Blob1 = () => (
     <path fill="#F58022" opacity="1.000000" stroke="none" d="M150.889633,139.559143 C150.388870,142.971344 149.273941,146.005905 149.121155,149.088165 C148.283768,165.983337 147.715149,182.891663 146.970245,199.791763 C146.831894,202.930786 146.309998,206.052917 145.937668,209.615326 C143.298798,204.557755 141.306885,198.649155 137.941910,193.668167 C131.690765,184.414948 121.941376,180.502335 111.382141,177.943298 C92.949486,173.476120 74.361450,169.594910 56.760883,162.091156 C31.864479,151.476913 13.573343,134.641403 7.535606,107.647202 C2.498681,85.127533 7.359644,64.139732 22.442398,46.061672 C38.131042,27.257395 58.551334,18.466709 82.638298,20.213057 C108.040619,22.054766 127.770973,34.310925 140.418610,56.909115 C148.112701,70.656548 150.721375,85.682426 150.971054,101.206848 C151.129074,111.032318 151.021042,120.862473 150.987595,130.690369 C150.977951,133.528366 150.813232,136.365829 150.889633,139.559143 z"/>
   </svg>
 );
-// Blob2: extracted from blob2.svg
 const BLOB2_WIDTH = 160;
 const BLOB2_HEIGHT = 140;
 const Blob2 = () => (
@@ -23,40 +21,32 @@ const Blob2 = () => (
   </svg>
 );
 
-// Helper for random animation
 function getRandomVelocity() {
   const angle = Math.random() * 2 * Math.PI;
-  const speed = 1 + Math.random() * 1.2; // slower for smaller blobs
+  const speed = 0.5 + Math.random() * 0.6; // slower for smaller blobs
   return { x: Math.cos(angle) * speed, y: Math.sin(angle) * speed };
 }
 
-// Helper for random initial position
-function getRandomPosition(containerWidth: number, containerHeight: number, width: number, height: number) {
+function getRandomPosition(
+  containerWidth: number,
+  containerHeight: number,
+  width: number,
+  height: number
+) {
   return {
     x: Math.random() * (containerWidth - width),
     y: Math.random() * (containerHeight - height),
   };
 }
 
+type BlobState = { x: number; y: number; vx: number; vy: number; type: 1 | 2 };
+const BLOB_COUNT = 10;
+
 export default function ComingSoon() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-
-  // Lottie animation state
-  const [lottieData, setLottieData] = useState<object | null>(null);
-  useEffect(() => {
-    fetch("/COMING SOON.json")
-      .then((res) => res.json())
-      .then(setLottieData)
-      .catch(() => setLottieData(null));
-  }, []);
-
-  type BlobState = { x: number; y: number; vx: number; vy: number; type: 1 | 2 };
-  const BLOB_COUNT = 10;
-  // Initialize 10 of each blob type
   const [blobs, setBlobs] = useState<BlobState[]>([]);
 
-  // Update container size on resize
   useEffect(() => {
     function updateSize() {
       if (containerRef.current) {
@@ -69,7 +59,6 @@ export default function ComingSoon() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Generate blobs only on client after container size is known
   useEffect(() => {
     if (containerSize.width === 0 || containerSize.height === 0) return;
     const arr: BlobState[] = [];
@@ -84,37 +73,35 @@ export default function ComingSoon() {
     setBlobs(arr);
   }, [containerSize.width, containerSize.height]);
 
-  // Animation loop
   useEffect(() => {
     let animationFrame: number;
     function animate() {
       setBlobs((prev) => {
-        const arr = prev.map((blob, i) => {
-          // Get correct size
+        const arr = prev.map((blob) => {
           const width = blob.type === 1 ? BLOB1_WIDTH : BLOB2_WIDTH;
           const height = blob.type === 1 ? BLOB1_HEIGHT : BLOB2_HEIGHT;
-          const { x: oldX, y: oldY, vx: oldVx, vy: oldVy, type } = blob;
-          let x = oldX, y = oldY, vx = oldVx, vy = oldVy;
-          x += vx;
-          y += vy;
-          // Mirror bounce off edges
-          if (x < 0) {
-            x = -x;
-            vx *= -1;
-          } else if (x > containerSize.width - width) {
-            x = 2 * (containerSize.width - width) - x;
-            vx *= -1;
+          const { x, y, vx, vy, type } = blob;
+          let newX = x + vx;
+          let newY = y + vy;
+          let newVx = vx;
+          let newVy = vy;
+          if (newX < 0) {
+            newX = -newX;
+            newVx *= -1;
+          } else if (newX > containerSize.width - width) {
+            newX = 2 * (containerSize.width - width) - newX;
+            newVx *= -1;
           }
-          if (y < 0) {
-            y = -y;
-            vy *= -1;
-          } else if (y > containerSize.height - height) {
-            y = 2 * (containerSize.height - height) - y;
-            vy *= -1;
+          if (newY < 0) {
+            newY = -newY;
+            newVy *= -1;
+          } else if (newY > containerSize.height - height) {
+            newY = 2 * (containerSize.height - height) - newY;
+            newVy *= -1;
           }
-          return { x, y, vx, vy, type };
+          return { x: newX, y: newY, vx: newVx, vy: newVy, type };
         });
-        // Simple collision: bounce if overlapping (naive O(n^2))
+        // Simple collision: bounce if overlapping
         for (let i = 0; i < arr.length; ++i) {
           for (let j = i + 1; j < arr.length; ++j) {
             const a = arr[i];
@@ -123,21 +110,18 @@ export default function ComingSoon() {
             const ah = a.type === 1 ? BLOB1_HEIGHT : BLOB2_HEIGHT;
             const bw = b.type === 1 ? BLOB1_WIDTH : BLOB2_WIDTH;
             const bh = b.type === 1 ? BLOB1_HEIGHT : BLOB2_HEIGHT;
-            // Use center distance for collision
             const acx = a.x + aw / 2, acy = a.y + ah / 2;
             const bcx = b.x + bw / 2, bcy = b.y + bh / 2;
             const dx = acx - bcx, dy = acy - bcy;
             const minDist = Math.max(aw, ah, bw, bh) * 0.45;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < minDist) {
-              // Swap velocities
               const tempVx = a.vx;
               const tempVy = a.vy;
               a.vx = b.vx;
               a.vy = b.vy;
               b.vx = tempVx;
               b.vy = tempVy;
-              // Move apart
               const overlap = minDist - dist;
               const nx = dx / dist;
               const ny = dy / dist;
@@ -176,6 +160,16 @@ export default function ComingSoon() {
         </div>
       </div>
 
+      {/* Centered Coming Soon Text */}
+      <TrueFocus 
+        sentence="Coming Soon"
+        manualMode={false}
+        blurAmount={5}
+        borderColor="red"
+        animationDuration={2}
+        pauseBetweenAnimations={1}
+      />
+
       {/* Animated Blobs */}
       {blobs.length > 0 && blobs.map((blob, i) => (
         <div
@@ -192,21 +186,6 @@ export default function ComingSoon() {
           {blob.type === 1 ? <Blob1 /> : <Blob2 />}
         </div>
       ))}
-
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="rounded-2xl bg-white/60 backdrop-blur-md flex items-center justify-center">
-          {/* Lottie animation for Coming Soon */}
-          {lottieData && (
-            <Lottie
-              animationData={lottieData}
-              loop
-              style={{ width: 400, height: 400, maxWidth: "80vw", maxHeight: "60vh" }}
-            />
-          )}
-        </div>
-        {/* Optionally add subtitle or countdown here */}
-      </div>
 
       {/* Bottom Logo Placeholder */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
