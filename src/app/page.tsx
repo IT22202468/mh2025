@@ -40,12 +40,27 @@ function getRandomPosition(
 }
 
 type BlobState = { x: number; y: number; vx: number; vy: number; type: 1 | 2 };
-const BLOB_COUNT = 10;
+const MOBILE_BLOB_COUNT = 3;
+const DESKTOP_BLOB_COUNT = 10;
 
 export default function ComingSoon() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [blobs, setBlobs] = useState<BlobState[]>([]);
+  const [blobCount, setBlobCount] = useState(DESKTOP_BLOB_COUNT);
+
+  useEffect(() => {
+    function updateBlobCount() {
+      if (window.innerWidth <= 768) {
+        setBlobCount(MOBILE_BLOB_COUNT);
+      } else {
+        setBlobCount(DESKTOP_BLOB_COUNT);
+      }
+    }
+    updateBlobCount();
+    window.addEventListener("resize", updateBlobCount);
+    return () => window.removeEventListener("resize", updateBlobCount);
+  }, []);
 
   useEffect(() => {
     function updateSize() {
@@ -62,7 +77,7 @@ export default function ComingSoon() {
   useEffect(() => {
     if (containerSize.width === 0 || containerSize.height === 0) return;
     const arr: BlobState[] = [];
-    for (let i = 0; i < BLOB_COUNT; ++i) {
+    for (let i = 0; i < blobCount; ++i) {
       const pos1 = getRandomPosition(containerSize.width, containerSize.height, BLOB1_WIDTH, BLOB1_HEIGHT);
       const vel1 = getRandomVelocity();
       arr.push({ x: pos1.x, y: pos1.y, vx: vel1.x, vy: vel1.y, type: 1 });
@@ -71,7 +86,7 @@ export default function ComingSoon() {
       arr.push({ x: pos2.x, y: pos2.y, vx: vel2.x, vy: vel2.y, type: 2 });
     }
     setBlobs(arr);
-  }, [containerSize.width, containerSize.height]);
+  }, [containerSize.width, containerSize.height, blobCount]);
 
   useEffect(() => {
     let animationFrame: number;
