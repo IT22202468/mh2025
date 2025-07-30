@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import MusicPlayer from "./MusicPlayer";
 
 export const metadata: Metadata = {
   title: "MiniHackathon 25",
@@ -15,7 +14,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MusicPlayer />
         {children}
       </body>
     </html>
